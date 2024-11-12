@@ -1,16 +1,14 @@
 from django.shortcuts import render, redirect
-from django.db.models import Sum, Avg, F
-
+from django.db.models import Sum, Avg, F, Count
 from django.contrib import messages
-from .models import Item, Category, Supplier
+from .models import Item, Category, Supplier,Admin
 from .forms import ItemForm, CategoryForm, SupplierForm
 
 def dashboard(request):
-    # Ringkasan sistem
     total_items = Item.objects.count()
     total_stock_value = Item.objects.aggregate(
         total=Sum(F('price') * F('quantity'))
-        )['total'] or 0
+    )['total'] or 0
     total_categories = Category.objects.count()
     total_suppliers = Supplier.objects.count()
     
@@ -24,17 +22,16 @@ def dashboard(request):
 
 def item_list(request):
     items = Item.objects.all()
-    
-    # Statistik item
     stats = Item.objects.aggregate(
         total_stock=Sum('quantity'),
-        total_value=Sum(F('price') * F('quantity')),  # Use F expressions here
+        total_value=Sum(F('price') * F('quantity')),
         avg_price=Avg('price')
     )
-    
-    # Items dengan stok rendah (di bawah 5)
     low_stock_items = Item.objects.filter(quantity__lt=5)
     
+    for item in items:
+        item.total_value = item.price * item.quantity  # Menghitung total nilai stok
+        
     context = {
         'items': items,
         'stats': stats,
@@ -47,7 +44,13 @@ def item_create(request):
         form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
-            item.created_by = request.user  # Assuming user authentication is implemented
+            # Check if Admin is a separate model
+            try:
+                admin = Admin.objects.get(username=request.user)  # Assuming Admin is related to User via a One-to-One field
+                item.created_by = admin
+            except Admin.DoesNotExist:
+                messages.error(request, 'Admin profile not found for this user.')
+                return redirect('item_list')
             item.save()
             messages.success(request, 'Item berhasil ditambahkan.')
             return redirect('item_list')
@@ -59,7 +62,7 @@ def item_create(request):
 def category_list(request):
     categories = Category.objects.annotate(
         item_count=Count('item'),
-        total_value=Sum('item__price' * 'item__quantity'),
+        total_value=Sum(F('item__price') * F('item__quantity')),
         avg_price=Avg('item__price')
     )
     return render(request, '../templates/category_list.html', {'categories': categories})
@@ -81,7 +84,7 @@ def category_create(request):
 def supplier_list(request):
     suppliers = Supplier.objects.annotate(
         item_count=Count('item'),
-        total_value=Sum('item__price' * 'item__quantity')
+        total_value=Sum(F('item__price') * F('item__quantity'))
     )
     return render(request, '../templates/suppliers_list.html', {'suppliers': suppliers})
 
@@ -102,7 +105,7 @@ def supplier_create(request):
 def category_items(request, category_id):
     category = Category.objects.get(id=category_id)
     items = Item.objects.filter(category=category)
-    return render(request, 'core/categories/items.html', {
+    return render(request, '../templates/category_items.html', {
         'category': category,
         'items': items
     })

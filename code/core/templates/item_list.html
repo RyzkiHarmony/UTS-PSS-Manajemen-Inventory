@@ -79,8 +79,8 @@
                     <td>{{ item.supplier.name }}</td>
                     <td>Rp {{ item.price|floatformat:2 }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>Rp {% with total_value=item.price|floatformat:2|add:"0"|floatformat:2 %}{{ total_value|floatformat:2 }}</td>
-                    {% endwith %}
+                    <td>Rp {{ item.total_value|floatformat:2 }}</td>
+
                 </tr>
                 {% endfor %}
             </tbody>

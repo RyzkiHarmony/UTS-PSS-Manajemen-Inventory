@@ -1,12 +1,7 @@
 from django import forms
 from .models import Item, Category, Supplier
 
-class BootstrapFormMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for _, field in self.fields.items():
-            field.widget.attrs.update({'class': 'form-control'})
-            
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -21,3 +16,11 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         fields = ['name', 'description', 'price', 'quantity', 'category', 'supplier']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'supplier': forms.Select(attrs={'class': 'form-control'}),
+        }

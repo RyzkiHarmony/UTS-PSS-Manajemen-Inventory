@@ -1,4 +1,9 @@
 from django.db import models
+from django.db import connection
+
+def reset_auto_increment():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT setval('core_item_id_seq', (SELECT MAX(id) FROM core_item))")
 
 class Admin(models.Model):
     username = models.CharField(max_length=50, null=False)
