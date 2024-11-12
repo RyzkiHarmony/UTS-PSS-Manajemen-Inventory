@@ -1,11 +1,5 @@
-name,contact_info
-Tech Solutions Inc.,tech@example.com|+1234567890|123 Tech St
-Furniture Plus,furniture@example.com|+1234567891|456 Furniture Ave
-Book World,books@example.com|+1234567892|789 Book Rd
-Fashion Hub,fashion@example.com|+1234567893|321 Fashion Blvd
-Sports Elite,sports@example.com|+1234567894|654 Sports Way
-Food Distributors,food@example.com|+1234567895|987 Food St
-Toy Kingdom,toys@example.com|+1234567896|147 Toy Lane
-Tool Masters,tools@example.com|+1234567897|258 Tool Ave
-Beauty Essentials,beauty@example.com|+1234567898|369 Beauty Rd
-Auto Parts Co.,auto@example.com|+1234567899|159 Auto St
+id,name,contact_info,created_by_id,created_at,updated_at
+1,Tech Suppliers,+1234567890,1,2024-01-03 08:00:00,2024-01-03 08:00:00
+2,Fashion Corp,+2345678901,1,2024-01-03 09:00:00,2024-01-03 09:00:00
+3,Food Direct,+3456789012,2,2024-01-03 10:00:00,2024-01-03 10:00:00
+4,Book House,+4567890123,2,2024-01-03 11:00:00,2024-01-03 11:00:00
