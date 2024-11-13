@@ -85,27 +85,7 @@ def category_create(request):
     
     return render(request, '../templates/category_form.html', {'form': form})
 
-def category_items(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    items = Item.objects.filter(category=category)
-    
-    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
-    total_value = items.aggregate(
-        total=Sum(F('quantity') * F('price'))
-    )['total'] or 0
-    
-    category.item_count = items.count()
-    category.total_value = total_value
-    category.avg_price = total_value / category.item_count if category.item_count > 0 else 0
-    
-    context = {
-        'category': category,
-        'items': items,
-        'total_quantity': total_quantity,
-        'total_value': total_value,
-    }
-    
-    return render(request, 'core/templates/category_items.html', context)
+
 
 def supplier_list(request):
     suppliers = Supplier.objects.annotate(
@@ -119,7 +99,12 @@ def supplier_create(request):
         form = SupplierForm(request.POST)
         if form.is_valid():
             supplier = form.save(commit=False)
-            supplier.created_by = request.user
+            try:
+                admin = Admin.objects.get(username=request.user) 
+                supplier.created_by = admin
+            except Admin.DoesNotExist:
+                messages.error(request, 'Admin profile not found for this user.')
+                return redirect('supplier_list')
             supplier.save()
             messages.success(request, 'Supplier berhasil ditambahkan.')
             return redirect('supplier_list')
@@ -127,3 +112,11 @@ def supplier_create(request):
         form = SupplierForm()
     
     return render(request, '../templates/suppliers_form.html', {'form': form})
+
+def category_items(request, category_id):
+    category = Category.objects.get(id=category_id)
+    items = Item.objects.filter(category=category)
+    return render(request, '../templates/category_items.html', {
+        'category': category,
+        'items': items
+    })
