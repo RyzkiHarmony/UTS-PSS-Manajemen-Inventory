@@ -31,7 +31,6 @@ Sistem manajemen inventaris berbasis Django untuk mengelola barang, kategori, da
 6. Jalankan command berikut di shell:
    ```bash
    python manage.py makemigrations
-   ```bash
    python manage.py migrate
 7. Akses aplikasi di http://localhost:8011
 
