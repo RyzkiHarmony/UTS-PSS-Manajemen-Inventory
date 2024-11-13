@@ -20,8 +20,5 @@ docker-compose.override.yml
 # PostgreSQL
 postgres-data/
 
-# Env files
-*.env
-
 # VS Code
 .vscode/
