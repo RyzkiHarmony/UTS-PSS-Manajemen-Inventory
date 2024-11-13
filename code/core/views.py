@@ -85,8 +85,6 @@ def category_create(request):
     
     return render(request, '../templates/category_form.html', {'form': form})
 
-
-
 def supplier_list(request):
     suppliers = Supplier.objects.annotate(
         item_count=Count('item'),
