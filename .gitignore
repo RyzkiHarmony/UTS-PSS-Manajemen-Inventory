@@ -1,0 +1,27 @@
+# Python
+*.pyc
+__pycache__
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+db.sqlite3
+
+# Docker
+**/node_modules/
+**/dist/
+docker-compose.override.yml
+*.swp
+
+# PostgreSQL
+postgres-data/
+
+# Env files
+*.env
+
+# VS Code
+.vscode/
