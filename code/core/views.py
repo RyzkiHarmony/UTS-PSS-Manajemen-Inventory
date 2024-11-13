@@ -89,13 +89,11 @@ def category_items(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     items = Item.objects.filter(category=category)
     
-    # Hitung total
     total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
     total_value = items.aggregate(
         total=Sum(F('quantity') * F('price'))
     )['total'] or 0
     
-    # Hitung statistik kategori
     category.item_count = items.count()
     category.total_value = total_value
     category.avg_price = total_value / category.item_count if category.item_count > 0 else 0
@@ -129,11 +127,3 @@ def supplier_create(request):
         form = SupplierForm()
     
     return render(request, '../templates/suppliers_form.html', {'form': form})
-
-def category_items(request, category_id):
-    category = Category.objects.get(id=category_id)
-    items = Item.objects.filter(category=category)
-    return render(request, '../templates/category_items.html', {
-        'category': category,
-        'items': items
-    })
