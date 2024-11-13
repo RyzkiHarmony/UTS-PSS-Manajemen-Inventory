@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, Avg, F, Count
 from django.contrib import messages
 from .models import Item, Category, Supplier,Admin
@@ -44,9 +44,8 @@ def item_create(request):
         form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
-            # Check if Admin is a separate model
             try:
-                admin = Admin.objects.get(username=request.user)  # Assuming Admin is related to User via a One-to-One field
+                admin = Admin.objects.get(username=request.user)
                 item.created_by = admin
             except Admin.DoesNotExist:
                 messages.error(request, 'Admin profile not found for this user.')
@@ -72,7 +71,12 @@ def category_create(request):
         form = CategoryForm(request.POST)
         if form.is_valid():
             category = form.save(commit=False)
-            category.created_by = request.user
+            try:
+                admin = Admin.objects.get(username=request.user) 
+                category.created_by = admin
+            except Admin.DoesNotExist:
+                messages.error(request, 'Admin profile not found for this user.')
+                return redirect('category_list')
             category.save()
             messages.success(request, 'Kategori berhasil ditambahkan.')
             return redirect('category_list')
@@ -80,6 +84,30 @@ def category_create(request):
         form = CategoryForm()
     
     return render(request, '../templates/category_form.html', {'form': form})
+
+def category_items(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    items = Item.objects.filter(category=category)
+    
+    # Hitung total
+    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    total_value = items.aggregate(
+        total=Sum(F('quantity') * F('price'))
+    )['total'] or 0
+    
+    # Hitung statistik kategori
+    category.item_count = items.count()
+    category.total_value = total_value
+    category.avg_price = total_value / category.item_count if category.item_count > 0 else 0
+    
+    context = {
+        'category': category,
+        'items': items,
+        'total_quantity': total_quantity,
+        'total_value': total_value,
+    }
+    
+    return render(request, 'core/templates/category_items.html', context)
 
 def supplier_list(request):
     suppliers = Supplier.objects.annotate(
