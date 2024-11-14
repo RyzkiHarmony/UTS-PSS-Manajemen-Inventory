@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum, Avg, F, Count
+from django.shortcuts import render, redirect
+from django.db.models import Sum, Avg, F, Count, DecimalField, ExpressionWrapper
+from django.db.models.functions import Coalesce
 from django.contrib import messages
 from .models import Item, Category, Supplier,Admin
 from .forms import ItemForm, CategoryForm, SupplierForm
@@ -60,12 +61,19 @@ def item_create(request):
 
 def category_list(request):
     categories = Category.objects.annotate(
-        item_count=Count('item'),
-        total_value=Sum(F('item__price') * F('item__quantity')),
-        avg_price=Avg('item__price')
+        item_count=Coalesce(Count('item'), 0),
+        total_value=Coalesce(
+            Sum(F('item__price') * F('item__quantity')), 
+            0,
+            output_field=DecimalField()
+        ),
+        avg_price=Coalesce(
+            Avg('item__price'), 
+            0,
+            output_field=DecimalField()
+        )
     )
     return render(request, '../templates/category_list.html', {'categories': categories})
-
 def category_create(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -113,8 +121,31 @@ def supplier_create(request):
 
 def category_items(request, category_id):
     category = Category.objects.get(id=category_id)
+    
     items = Item.objects.filter(category=category)
+    
+    category.item_count = items.count()
+    category.total_value = items.aggregate(
+        total=Sum(F('price') * F('quantity'), 
+                 output_field=DecimalField(max_digits=15, decimal_places=2))
+    )['total'] or 0
+    category.avg_price = items.aggregate(
+        avg=Avg('price')
+    )['avg'] or 0
+
+    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    total_value = category.total_value
+
+    items = items.annotate(
+        total_value=ExpressionWrapper(
+            F('price') * F('quantity'),
+            output_field=DecimalField(max_digits=15, decimal_places=2)
+        )
+    )
+
     return render(request, '../templates/category_items.html', {
         'category': category,
-        'items': items
+        'items': items,
+        'total_quantity': total_quantity,
+        'total_value': total_value
     })
