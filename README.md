@@ -1,4 +1,8 @@
-﻿# Sistem Inventaris
+## Anggota Kelompok: 
+   Muhammad Rizki - A11.2022.14657
+
+
+## Sistem Inventaris
 
 Sistem manajemen inventaris berbasis Django untuk mengelola barang, kategori, dan supplier. Untuk memenuhi UTS Pemrograman Sisi Server.
 
@@ -30,9 +34,12 @@ Sistem manajemen inventaris berbasis Django untuk mengelola barang, kategori, da
 5. Attach Shell ke container uts-pss-manajemen-inventory-django
 6. Jalankan command berikut di shell:
    ```bash
-   python manage.py makemigrations
    python manage.py migrate
-7. Akses aplikasi di http://localhost:8011
+7. Jalankan ULANG Container Docker
+   ```bash
+   docker-compose down
+   docker-compose up -d
+8. Akses aplikasi di http://localhost:8011
 
 ## Cara Mengimport Database
 
